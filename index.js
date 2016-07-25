@@ -33,7 +33,19 @@ var TarGz = module.exports = function(zoptions, toptions) {
 TarGz.prototype.createReadStream = function(directory) {
 
   // Create all needed streams
-  var stream1 = fstream.Reader(directory);
+  var stream1 = fstream.Reader({
+      'path': directory,
+      'type': 'Directory',
+      'filter': function(entry) {
+          'use strict';
+
+          if (entry.props.type === 'Directory') {
+              entry.props.mode |= (entry.props.mode >>> 2) & parseInt('0111', 8);
+          }
+
+          return true;
+      }
+  });
   var stream2 = tar.Pack(this._options.tar);
   var stream3 = zlib.createGzip(this._options.zlib);
 
